@@ -75,6 +75,7 @@ class ForagingEnv(Env):
         max_episode_steps,
         force_coop,
         normalize_reward=True,
+        max_level=None
     ):
         self.logger = logging.getLogger(__name__)
         self.seed()
@@ -83,6 +84,8 @@ class ForagingEnv(Env):
         self.field = np.zeros(field_size, np.int32)
 
         self.max_food = max_food
+        # JW
+        self.max_level = max_level
         self._food_spawned = 0.0
         self.max_player_level = max_player_level
         self.sight = sight
@@ -231,7 +234,7 @@ class ForagingEnv(Env):
                 or not self._is_empty_location(row, col)
             ):
                 continue
-
+            
             self.field[row, col] = (
                 min_level
                 if min_level == max_level
@@ -392,8 +395,9 @@ class ForagingEnv(Env):
         self.spawn_players(self.max_player_level)
         player_levels = sorted([player.level for player in self.players])
 
+        # JW: control the max_level of apples
         self.spawn_food(
-            self.max_food, max_level=sum(player_levels[:3])
+            self.max_food, max_level=self.max_level if self.max_level != None else sum(player_levels[:3])
         )
         self.current_step = 0
         self._game_over = False
